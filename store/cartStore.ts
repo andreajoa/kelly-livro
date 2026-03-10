@@ -7,33 +7,30 @@ export interface CartItem {
   quantity: number
 }
 
-export interface ShippingInfo {
-  cep: string
-  method: string
-  price: number
-  estimatedDays: number
-  city: string
-  state: string
-  logradouro: string
-  bairro: string
-}
-
 interface CartState {
   items: CartItem[]
-  shipping: ShippingInfo | null
+  cep: string
+  shippingCost: number | null
+  setCep: (cep: string) => void
+  setShippingCost: (cost: number | null) => void
   addItem: (item: CartItem) => void
   removeItem: (id: string) => void
   clearCart: () => void
-  setShipping: (shipping: ShippingInfo) => void
-  clearShipping: () => void
 }
 
 export const useCart = create<CartState>((set) => ({
   items: [],
-  shipping: null,
-  addItem: (item) => set((state) => ({ items: [...state.items, item] })),
-  removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-  clearCart: () => set({ items: [], shipping: null }),
-  setShipping: (shipping) => set({ shipping }),
-  clearShipping: () => set({ shipping: null }),
+  cep: "",
+  shippingCost: null,
+  setCep: (cep) => set({ cep }),
+  setShippingCost: (cost) => set({ shippingCost: cost }),
+  addItem: (item) =>
+    set((state) => {
+      const exists = state.items.find((i) => i.name === item.name)
+      if (exists) return { items: state.items }
+      return { items: [...state.items, item] }
+    }),
+  removeItem: (id) =>
+    set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+  clearCart: () => set({ items: [], shippingCost: null, cep: "" }),
 }))
