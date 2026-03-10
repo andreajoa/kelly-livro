@@ -10,6 +10,7 @@ import { useLang } from "@/lib/LangContext"
 export default function CarrinhoPage() {
   const { items, removeItem, shippingCost } = useCart()
   const { t, locale } = useLang()
+  const currencySymbol = t.currency === "USD" ? "$" : "R$"
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping = t.showShipping ? (shippingCost || 0) : 0
   const total = subtotal + shipping
@@ -34,7 +35,10 @@ export default function CarrinhoPage() {
                   <div key={item.id} className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-3 sm:p-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <img src="/images/capa-livro.png" alt="" className="w-12 h-16 sm:w-16 sm:h-20 object-cover rounded-lg shadow flex-shrink-0" />
-                      <div className="min-w-0"><p className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{item.name}</p><p className="text-rosa-600 font-bold text-sm">{t.currency === "USD" ? "$" : "R$"} {item.price.toFixed(2)}</p></div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{item.name}</p>
+                        <p className="text-rosa-600 font-bold text-sm">{currencySymbol} {item.price.toFixed(2)}</p>
+                      </div>
                     </div>
                     <button onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600 text-xs flex-shrink-0">{t.carrinho.remove}</button>
                   </div>
@@ -44,11 +48,11 @@ export default function CarrinhoPage() {
                 <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-4 sm:p-6 lg:sticky lg:top-28">
                   <h2 className="text-lg font-bold mb-3 border-b pb-3">{t.carrinho.summary}</h2>
                   <div className="space-y-2 text-gray-600 text-sm">
-                    <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{t.currency === "USD" ? "$" : "R$"} {subtotal.toFixed(2)}</span></div>
-                    {t.showShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{shippingCost ? `R$ ${shippingCost.toFixed(2)}` : "—"}</span></div>}
+                    <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{currencySymbol} {subtotal.toFixed(2)}</span></div>
+                    {t.showShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{shippingCost ? `${currencySymbol} ${shippingCost.toFixed(2)}` : "—"}</span></div>}
                   </div>
-                  <ShippingCalculator />
-                  <div className="flex justify-between font-bold text-lg mt-4 border-t pt-3"><span>{t.carrinho.total}</span><span>{t.currency === "USD" ? "$" : "R$"} {total.toFixed(2)}</span></div>
+                  {t.showShipping && <ShippingCalculator />}
+                  <div className="flex justify-between font-bold text-lg mt-4 border-t pt-3"><span>{t.carrinho.total}</span><span>{currencySymbol} {total.toFixed(2)}</span></div>
                   {canCheckout ? (
                     <Link href={`/${locale}/checkout`} onClick={() => trackEvent("click_checkout", "/carrinho", { total })} className="block w-full text-center mt-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3 rounded-lg text-sm">{t.carrinho.checkout}</Link>
                   ) : (

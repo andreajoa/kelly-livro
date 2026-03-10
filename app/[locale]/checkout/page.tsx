@@ -9,6 +9,7 @@ import { useLang } from "@/lib/LangContext"
 export default function CheckoutPage() {
   const { items, shippingCost, clearCart } = useCart()
   const { t, locale } = useLang()
+  const currencySymbol = t.currency === "USD" ? "$" : "R$"
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping = t.showShipping ? (shippingCost || 0) : 0
   const total = subtotal + shipping
@@ -21,7 +22,7 @@ export default function CheckoutPage() {
     e.preventDefault(); setLoading(true)
     try {
       await trackEvent("submit_checkout", `/${locale}/checkout`, { total, locale })
-      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale } as any)
+      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale, currency: t.currency } as any)
       if (result.ok) { setSuccess(true); clearCart() }
     } catch { alert("Error") } finally { setLoading(false) }
   }
@@ -29,8 +30,6 @@ export default function CheckoutPage() {
   if (success) return (
     <main><Navbar /><section className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 min-h-screen flex items-center justify-center"><div className="text-center bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-8 sm:p-14 max-w-lg"><div className="text-5xl sm:text-6xl mb-4">✅</div><h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900 mb-4">{t.checkoutPage.successTitle}</h1><p className="text-gray-600 text-sm sm:text-base">{t.checkoutPage.successText}</p></div></section><Footer /></main>
   )
-
-  const sym = t.currency === "USD" ? "$" : "R$"
 
   return (
     <main><Navbar />
@@ -62,11 +61,11 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2">
               <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-4 sm:p-6 lg:sticky lg:top-28">
                 <h2 className="text-lg font-bold mb-3 border-b pb-3">{t.checkoutPage.yourOrder}</h2>
-                {items.map(item => (<div key={item.id} className="flex justify-between py-2 text-xs sm:text-sm"><span className="truncate pr-2">{item.name}</span><span className="font-semibold flex-shrink-0">{sym} {item.price.toFixed(2)}</span></div>))}
+                {items.map(item => (<div key={item.id} className="flex justify-between py-2 text-xs sm:text-sm"><span className="truncate pr-2">{item.name}</span><span className="font-semibold flex-shrink-0">{currencySymbol} {item.price.toFixed(2)}</span></div>))}
                 <div className="border-t mt-3 pt-3 space-y-1 text-xs sm:text-sm">
-                  <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{sym} {subtotal.toFixed(2)}</span></div>
-                  {t.showShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{sym} {shipping.toFixed(2)}</span></div>}
-                  <div className="flex justify-between font-bold text-base mt-2"><span>{t.carrinho.total}</span><span>{sym} {total.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{currencySymbol} {subtotal.toFixed(2)}</span></div>
+                  {t.showShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{currencySymbol} {shipping.toFixed(2)}</span></div>}
+                  <div className="flex justify-between font-bold text-base mt-2"><span>{t.carrinho.total}</span><span>{currencySymbol} {total.toFixed(2)}</span></div>
                 </div>
               </div>
             </div>
