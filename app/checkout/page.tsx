@@ -1,93 +1,46 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { useCart } from "@/store/cartStore"
-import Link from "next/link"
+import { createOrder, trackEvent } from "@/lib/api"
 
 export default function CheckoutPage() {
-  const { items, shipping } = useCart()
+  const { items, shippingCost, clearCart } = useCart()
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shippingCost = shipping?.price || 0
-  const total = subtotal + shippingCost
+  const total = subtotal + (shippingCost || 0)
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   const [form, setForm] = useState({
-    nome: "",
-    whatsapp: "",
-    email: "",
-    cep: shipping?.cep || "",
-    logradouro: shipping?.logradouro || "",
-    numero: "",
-    complemento: "",
-    bairro: shipping?.bairro || "",
-    cidade: shipping?.city || "",
-    estado: shipping?.state || "",
-    referencia: "",
+    full_name: "", email: "", whatsapp: "", address: "", cep: "", city_state: "", reference_point: "",
   })
 
-  const [cepLoading, setCepLoading] = useState(false)
-
-  const updateField = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const formatPhone = (value: string) => {
-    const nums = value.replace(/\D/g, "").slice(0, 11)
-    if (nums.length > 6) return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`
-    if (nums.length > 2) return `(${nums.slice(0, 2)}) ${nums.slice(2)}`
-    return nums
-  }
-
-  const formatCep = (value: string) => {
-    const nums = value.replace(/\D/g, "").slice(0, 8)
-    if (nums.length > 5) return nums.slice(0, 5) + "-" + nums.slice(5)
-    return nums
-  }
-
-  const buscarCep = async (cep: string) => {
-    const clean = cep.replace(/\D/g, "")
-    if (clean.length !== 8) return
-
-    setCepLoading(true)
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`)
-      const data = await res.json()
-      if (!data.erro) {
-        setForm((prev) => ({
-          ...prev,
-          logradouro: data.logradouro || prev.logradouro,
-          bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.cidade,
-          estado: data.uf || prev.estado,
-        }))
-      }
-    } catch {}
-    setCepLoading(false)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!form.nome || !form.whatsapp || !form.email || !form.cep || !form.logradouro || !form.numero || !form.bairro || !form.cidade || !form.estado) {
-      alert("Por favor, preencha todos os campos obrigatorios.")
-      return
-    }
-
-    alert("Redirecionando para pagamento seguro via Stripe...\n\nEm producao, aqui voce seria redirecionado para a pagina de pagamento da Stripe.")
+    setLoading(true)
+    try {
+      await trackEvent("submit_checkout", "/checkout", { total })
+      const result = await createOrder({ ...form, subtotal, shipping_cost: shippingCost || 0, total })
+      if (result.ok) { setSuccess(true); clearCart() }
+    } catch { alert("Erro ao processar. Tente novamente.") }
+    finally { setLoading(false) }
   }
 
-  if (items.length === 0) {
+  if (success) {
     return (
       <main>
         <Navbar />
-        <section className="pt-32 pb-20 px-6 bg-gradient-to-b from-rosa-50 to-white min-h-screen">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-14">
-              <div className="text-6xl mb-6">🛒</div>
-              <p className="text-gray-500 text-lg mb-6">Seu carrinho esta vazio</p>
-              <Link href="/livro" className="bg-gradient-to-r from-rosa-600 to-rosa-700 text-white font-bold py-4 px-10 rounded-full text-lg shadow-lg transform hover:scale-105 transition-all duration-300 uppercase tracking-wide inline-block">← Ver o livro</Link>
-            </div>
+        <section className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 min-h-screen flex items-center justify-center">
+          <div className="text-center bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-8 sm:p-14 max-w-lg">
+            <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">✅</div>
+            <h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900 mb-4">Pedido Registrado!</h1>
+            <p className="text-gray-600 text-sm sm:text-base mb-6">Seus dados foram salvos. Em breve voce sera redirecionado para o pagamento.</p>
           </div>
         </section>
         <Footer />
@@ -98,151 +51,67 @@ export default function CheckoutPage() {
   return (
     <main>
       <Navbar />
-      <section className="pt-32 pb-20 px-6 bg-gradient-to-b from-rosa-50 to-white min-h-screen">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="text-rosa-600 text-sm font-semibold tracking-[0.2em] uppercase">Finalize sua compra</span>
-            <h1 className="text-3xl md:text-4xl font-playfair font-bold text-gray-900 mt-4">Checkout <span className="bg-gradient-to-r from-rosa-600 to-rosa-800 bg-clip-text text-transparent">Seguro</span></h1>
-          </div>
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 bg-gradient-to-b from-rosa-50 to-white min-h-screen">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-center text-2xl sm:text-4xl md:text-5xl font-playfair font-bold text-gray-900 mb-8 sm:mb-12">Finalizar Pedido</h1>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-6 md:p-8">
-                  <h2 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">👤 Dados Pessoais</h2>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-semibold text-gray-700 mb-1 block">Nome completo *</label>
-                      <input type="text" value={form.nome} onChange={(e) => updateField("nome", e.target.value)} placeholder="Seu nome completo" className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">WhatsApp *</label>
-                        <input type="tel" value={form.whatsapp} onChange={(e) => updateField("whatsapp", formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">E-mail *</label>
-                        <input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} placeholder="seuemail@exemplo.com" className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                    </div>
+          <div className="grid lg:grid-cols-5 gap-8 sm:gap-12">
+            <div className="lg:col-span-3">
+              <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Informacoes de Entrega</h2>
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold">Nome Completo *</label>
+                  <input name="full_name" type="text" required value={form.full_name} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="text-xs sm:text-sm font-semibold">Email *</label>
+                    <input name="email" type="email" required value={form.email} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
+                  </div>
+                  <div>
+                    <label className="text-xs sm:text-sm font-semibold">WhatsApp *</label>
+                    <input name="whatsapp" type="tel" required value={form.whatsapp} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
                   </div>
                 </div>
-
-                <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-6 md:p-8">
-                  <h2 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">📍 Endereco de Entrega</h2>
-
-                  <div className="space-y-4">
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">CEP *</label>
-                        <input
-                          type="text"
-                          value={form.cep}
-                          onChange={(e) => {
-                            const v = formatCep(e.target.value)
-                            updateField("cep", v)
-                            if (v.replace(/\D/g, "").length === 8) buscarCep(v)
-                          }}
-                          placeholder="00000-000"
-                          maxLength={9}
-                          className="w-full border-2 border-gray-200 p-3 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent"
-                          required
-                        />
-                        {cepLoading && <p className="text-rosa-500 text-xs mt-1">Buscando endereco...</p>}
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Rua / Logradouro *</label>
-                        <input type="text" value={form.logradouro} onChange={(e) => updateField("logradouro", e.target.value)} placeholder="Rua, Avenida..." className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Numero *</label>
-                        <input type="text" value={form.numero} onChange={(e) => updateField("numero", e.target.value)} placeholder="123" className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Complemento</label>
-                        <input type="text" value={form.complemento} onChange={(e) => updateField("complemento", e.target.value)} placeholder="Apto, Bloco..." className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Bairro *</label>
-                        <input type="text" value={form.bairro} onChange={(e) => updateField("bairro", e.target.value)} placeholder="Bairro" className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Cidade *</label>
-                        <input type="text" value={form.cidade} onChange={(e) => updateField("cidade", e.target.value)} placeholder="Cidade" className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Estado *</label>
-                        <input type="text" value={form.estado} onChange={(e) => updateField("estado", e.target.value.toUpperCase().slice(0, 2))} placeholder="UF" maxLength={2} className="w-full border-2 border-gray-200 p-3 rounded-xl font-mono uppercase focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" required />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-semibold text-gray-700 mb-1 block">Ponto de Referencia</label>
-                      <input type="text" value={form.referencia} onChange={(e) => updateField("referencia", e.target.value)} placeholder="Proximo a, em frente a..." className="w-full border-2 border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rosa-400 focus:border-transparent" />
-                    </div>
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold">Endereco Completo *</label>
+                  <input name="address" type="text" required value={form.address} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="text-xs sm:text-sm font-semibold">CEP *</label>
+                    <input name="cep" type="text" required value={form.cep} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
+                  </div>
+                  <div>
+                    <label className="text-xs sm:text-sm font-semibold">Cidade / Estado *</label>
+                    <input name="city_state" type="text" required value={form.city_state} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
                   </div>
                 </div>
-
-                <button type="submit" className="w-full bg-gradient-to-r from-rosa-600 to-rosa-700 hover:from-rosa-700 hover:to-rosa-800 text-white font-bold py-5 px-10 rounded-full text-xl shadow-2xl shadow-rosa-500/40 transform hover:scale-105 transition-all duration-300 uppercase tracking-wider">
-                  🔒 Ir para pagamento seguro
-                </button>
-
-                <p className="text-center text-gray-400 text-xs">Voce sera redirecionado para o ambiente seguro da Stripe para finalizar o pagamento.</p>
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold">Ponto de Referencia</label>
+                  <input name="reference_point" type="text" value={form.reference_point} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rosa-400 text-sm sm:text-base" />
+                </div>
+                <div className="pt-4 sm:pt-6">
+                  <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 text-white font-bold py-3 sm:py-4 rounded-lg text-sm sm:text-lg disabled:bg-gray-400">
+                    {loading ? "Processando..." : "💳 Pagar com Stripe"}
+                  </button>
+                </div>
               </form>
             </div>
 
-            <div className="md:col-span-1">
-              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-6 sticky top-32">
-                <h2 className="font-bold text-gray-900 text-lg mb-6">Resumo do Pedido</h2>
-
-                {items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-                    <img src="/images/capa-livro.png" alt={item.name} className="w-14 h-18 object-cover rounded-lg shadow" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 text-sm leading-tight">{item.name}</p>
-                      <p className="text-rosa-600 font-bold mt-1">R$ {item.price.toFixed(2)}</p>
-                    </div>
+            <div className="lg:col-span-2">
+              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-4 sm:p-6 lg:sticky lg:top-28">
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-3 sm:pb-4">Seu Pedido</h2>
+                {items.map(item => (
+                  <div key={item.id} className="flex justify-between items-center py-2 text-xs sm:text-sm">
+                    <span className="truncate pr-2">{item.name}</span>
+                    <span className="font-semibold flex-shrink-0">R$ {item.price.toFixed(2)}</span>
                   </div>
                 ))}
-
-                <div className="space-y-2 text-sm mt-4">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span>R$ {subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Frete ({shipping?.method || "—"})</span>
-                    <span>{shipping ? `R$ ${shipping.price.toFixed(2)}` : "—"}</span>
-                  </div>
-                  {shipping && (
-                    <div className="flex justify-between text-gray-400 text-xs">
-                      <span>Entrega</span>
-                      <span>{shipping.estimatedDays} dias uteis</span>
-                    </div>
-                  )}
-                  <div className="border-t-2 border-dashed border-gray-200 my-3" />
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900 text-lg">Total</span>
-                    <span className="text-2xl font-playfair font-bold text-rosa-700">R$ {total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="mt-6 space-y-2 text-gray-400 text-xs text-center">
-                  <p>🔒 Pagamento seguro via Stripe</p>
-                  <p>🛡️ Garantia de 7 dias</p>
-                  <p>📦 Envio pelos Correios</p>
-                </div>
-
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl">
-                  <p className="text-green-700 text-xs font-semibold text-center">✅ Incluso: Carta da autora + Guia digital + Garantia 7 dias</p>
+                <div className="border-t mt-3 sm:mt-4 pt-3 sm:pt-4 space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                  <div className="flex justify-between"><span>Subtotal</span><span>R$ {subtotal.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span>Frete</span><span>R$ {(shippingCost || 0).toFixed(2)}</span></div>
+                  <div className="flex justify-between font-bold text-base sm:text-lg mt-2"><span>Total</span><span>R$ {total.toFixed(2)}</span></div>
                 </div>
               </div>
             </div>

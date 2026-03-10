@@ -30,22 +30,18 @@
     0% { opacity: 0; }
     100% { opacity: 1; }
   }
-
   @keyframes fadeInUp {
     0% { opacity: 0; transform: translateY(30px); }
     100% { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes fadeInDown {
     0% { opacity: 0; transform: translateY(-30px); }
     100% { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-20px); }
   }
-
   @keyframes countPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -54,6 +50,7 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -64,4 +61,8 @@ body {
 ::selection {
   background-color: var(--color-rosa-200);
   color: var(--color-rosa-900);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

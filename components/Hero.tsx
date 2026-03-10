@@ -2,80 +2,71 @@
 
 import { useCart } from "@/store/cartStore"
 import { v4 as uuidv4 } from "uuid"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { trackEvent } from "@/lib/api"
 
 export default function Hero() {
   const addItem = useCart((s) => s.addItem)
+  const router = useRouter()
 
   const handleComprar = () => {
-    addItem({ id: uuidv4(), name: "Antes que eu entendesse — Kelly Marques", price: 119, quantity: 1 })
-    alert("Livro adicionado ao carrinho!")
+    addItem({ id: uuidv4(), name: "Antes que eu entendesse — Kelly Marques", price: 119.0, quantity: 1 })
+    trackEvent("add_to_cart", "/", { source: "hero" })
+    router.push("/carrinho")
   }
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-rosa-900 via-rosa-800 to-rosa-950" />
+      {/* Video desktop */}
+      <video autoPlay loop muted playsInline className="absolute z-0 w-full h-full object-cover hidden md:block">
+        <source src="/videos/banner1.mp4" type="video/mp4" />
+      </video>
 
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-rosa-300 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
+      {/* Imagem mobile */}
+      <div className="absolute z-0 w-full h-full md:hidden">
+        <img src="/images/hero-mobile.jpeg" alt="Hero" className="w-full h-full object-cover" />
       </div>
 
-      <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
+      <div className="absolute inset-0 bg-black/50 z-10" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-32 grid md:grid-cols-2 gap-16 items-center">
-        <div className="text-center md:text-left animate-fade-in-up">
-          <span className="inline-block text-rosa-200 text-sm font-medium tracking-[0.3em] uppercase mb-6 border border-rosa-400/30 px-4 py-2 rounded-full">Lancamento 2025</span>
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
+          <div className="text-center md:text-left animate-fade-in-up">
+            <span className="inline-block text-rosa-200 text-xs sm:text-sm font-medium tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-4 sm:mb-6 border border-rosa-400/30 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
+              Lancamento
+            </span>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-playfair font-bold text-white leading-tight mb-6">
-            Antes que eu <span className="italic text-rosa-200">entendesse</span>
-          </h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-playfair font-bold text-white leading-tight mb-4 sm:mb-6">
+              Antes que eu <br className="sm:hidden" /><span className="italic text-rosa-200">entendesse</span>
+            </h1>
 
-          <p className="text-lg md:text-xl text-rosa-100/80 leading-relaxed mb-4 max-w-lg">
-            A jornada real de uma mae ao descobrir o autismo do seu filho. Uma historia de <strong className="text-white">amor, descoberta e transformacao</strong> que vai mudar sua perspectiva para sempre.
-          </p>
+            <p className="text-base sm:text-lg md:text-xl text-rosa-100/80 leading-relaxed mb-6 sm:mb-8 max-w-lg mx-auto md:mx-0">
+              A jornada real de uma mae ao descobrir o autismo do seu filho. Uma historia de <strong className="text-white">amor, descoberta e transformacao</strong>.
+            </p>
 
-          <p className="text-rosa-200/60 text-sm mb-6">por <strong className="text-rosa-100">Kelly Marques</strong></p>
+            <div className="flex items-baseline justify-center md:justify-start gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">R$ 119</span>
+              <span className="text-lg sm:text-2xl text-gray-400 line-through">R$ 149</span>
+            </div>
 
-          <div className="flex items-center gap-2 justify-center md:justify-start mb-6">
-            <div className="flex text-yellow-400 text-lg">⭐⭐⭐⭐⭐</div>
-            <span className="text-rosa-200/70 text-sm">Centenas de maes ja se identificaram</span>
-          </div>
-
-          <div className="flex items-baseline gap-3 justify-center md:justify-start mb-6">
-            <span className="text-rosa-300/60 line-through text-lg">R$ 169,90</span>
-            <span className="text-white text-4xl font-playfair font-bold">R$ 119,00</span>
-            <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">-30%</span>
-          </div>
-
-          <p className="text-rosa-200/50 text-sm mb-8">ou em ate 3x de R$ 39,67 sem juros</p>
-
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <button onClick={handleComprar} className="bg-gradient-to-r from-rosa-600 to-rosa-700 hover:from-rosa-700 hover:to-rosa-800 text-white font-bold py-6 px-16 rounded-full text-xl shadow-2xl shadow-rosa-500/40 hover:shadow-rosa-500/50 transform hover:scale-105 transition-all duration-300 uppercase tracking-wider animate-pulse-slow">
-              🛒 Quero meu exemplar — R$ 119,00
+            <button onClick={handleComprar} className="w-full sm:w-auto bg-gradient-to-r from-rosa-600 to-rosa-700 hover:from-rosa-700 hover:to-rosa-800 text-white font-bold py-4 sm:py-5 px-8 sm:px-12 rounded-full text-base sm:text-xl shadow-2xl shadow-rosa-500/40 transform hover:scale-105 transition-all duration-300 uppercase tracking-wider">
+              🛒 Comprar Agora
             </button>
+
+            <div className="flex items-center gap-4 sm:gap-6 justify-center md:justify-start mt-6 sm:mt-8 text-rosa-200/50 text-xs">
+              <span>🔒 Compra Segura</span>
+              <span>📦 Envio Rapido</span>
+              <span>🛡️ Garantia 7 dias</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6 justify-center md:justify-start mt-8 text-rosa-200/50 text-xs">
-            <span>🔒 Compra Segura</span>
-            <span>📦 Envio para todo Brasil</span>
-            <span>🛡️ Garantia 7 dias</span>
+          <div className="hidden md:flex justify-center animate-fade-in">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-rosa-400 to-rosa-600 rounded-2xl blur-2xl opacity-30 group-hover:opacity-50" />
+              <img src="/images/capa-livro.png" alt="Capa do livro" className="relative w-64 lg:w-96 rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform" />
+            </div>
           </div>
         </div>
-
-        <div className="flex justify-center animate-fade-in">
-          <div className="relative group">
-            <div className="absolute -inset-4 bg-gradient-to-r from-rosa-400 to-rosa-600 rounded-2xl blur-2xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
-            <img src="/images/capa-livro.png" alt="Capa do livro Antes que eu entendesse" className="relative w-80 md:w-96 rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-700" />
-            <div className="absolute -top-4 -right-4 bg-dourado-400 text-rosa-900 font-bold text-sm px-4 py-2 rounded-full shadow-lg animate-bounce">-30%</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/40 animate-bounce">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
       </div>
     </section>
   )
