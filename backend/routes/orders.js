@@ -57,3 +57,16 @@ router.get("/leads", (req, res) => {
 })
 
 module.exports = router
+
+// Salvar lead do popup
+router.post("/lead-popup", (req, res) => {
+  try {
+    const { email, phone, source, locale } = req.body
+    db.prepare(
+      "INSERT INTO leads (email, whatsapp, source, full_name) VALUES (?, ?, ?, ?)"
+    ).run(email, phone || "", source || "popup", locale || "")
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
