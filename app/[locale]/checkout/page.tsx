@@ -14,25 +14,47 @@ export default function CheckoutPage() {
   const shipping = t.showShipping ? (shippingCost || 0) : 0
   const total = subtotal + shipping
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [form, setForm] = useState({ full_name: "", email: "", whatsapp: "", address: "", cep: "", city_state: "", reference_point: "" })
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true)
+    e.preventDefault()
+    setLoading(true)
     try {
       await trackEvent("submit_checkout", `/${locale}/checkout`, { total, locale })
-      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale, currency: t.currency } as any)
-      if (result.ok) { setSuccess(true); clearCart() }
-    } catch { alert("Error") } finally { setLoading(false) }
+      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale, currency: t.currency })
+      if (result.ok && result.checkout_url) {
+        window.location.href = result.checkout_url
+      } else {
+        alert("Error creating order")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error processing payment")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (success) return (
-    <main><Navbar /><section className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 min-h-screen flex items-center justify-center"><div className="text-center bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-8 sm:p-14 max-w-lg"><div className="text-5xl sm:text-6xl mb-4">✅</div><h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900 mb-4">{t.checkoutPage.successTitle}</h1><p className="text-gray-600 text-sm sm:text-base">{t.checkoutPage.successText}</p></div></section><Footer /></main>
-  )
+  if (items.length === 0) {
+    return (
+      <main>
+        <Navbar />
+        <section className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 min-h-screen flex items-center justify-center">
+          <div className="text-center bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-8 sm:p-14 max-w-lg">
+            <div className="text-5xl sm:text-6xl mb-4">🛒</div>
+            <h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900 mb-4">{t.carrinho.empty}</h1>
+            <a href={`/${locale}`} className="text-rosa-600 underline">{t.carrinho.back}</a>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
 
   return (
-    <main><Navbar />
+    <main>
+      <Navbar />
       <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 bg-gradient-to-b from-rosa-50 to-white min-h-screen">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-center text-2xl sm:text-4xl font-playfair font-bold text-gray-900 mb-8 sm:mb-12">{t.checkoutPage.title}</h1>
@@ -55,7 +77,12 @@ export default function CheckoutPage() {
                     <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.reference}</label><input name="reference_point" value={form.reference_point} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
                   </>
                 )}
-                <div className="pt-4"><button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 sm:py-4 rounded-lg text-sm sm:text-lg disabled:bg-gray-400">{loading ? t.checkoutPage.processing : t.checkoutPage.cta}</button></div>
+                <div className="pt-4">
+                  <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 sm:py-4 rounded-lg text-sm sm:text-lg disabled:bg-gray-400">
+                    {loading ? t.checkoutPage.processing : t.checkoutPage.cta}
+                  </button>
+                  <p className="text-center text-xs text-gray-500 mt-2">🔒 {t.currency === "USD" ? "Secure payment powered by Stripe" : "Pagamento seguro via Stripe"}</p>
+                </div>
               </form>
             </div>
             <div className="lg:col-span-2">
@@ -71,7 +98,8 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-      </section><Footer />
+      </section>
+      <Footer />
     </main>
   )
 }
