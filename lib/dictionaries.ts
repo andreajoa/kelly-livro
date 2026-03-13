@@ -2,8 +2,11 @@ export type Locale = "pt" | "en" | "es"
 
 const shared = {
   productNamePt: "Antes que eu entendesse — Kelly Marques",
-  productNameEn: "Before I Understood — Kelly Marques",
-  productNameEs: "Antes de que yo entendiera — Kelly Marques",
+  productNameEn: "Before I Understood, You Were Already Transforming Me — Kelly Marques",
+  productNameEs: "Antes de que yo entendiera, ya me estabas transformando — Kelly Marques",
+  bookImagePt: "/images/livro-produto.png",
+  bookImageEn: "/images/capaingles.png",
+  bookImageEs: "/images/capaingles.png",
 }
 
 export const dictionaries = {
@@ -15,6 +18,7 @@ export const dictionaries = {
     priceDisplay: "R$ 119",
     oldPriceDisplay: "R$ 149",
     productName: shared.productNamePt,
+    bookImage: shared.bookImagePt,
     productType: "physical",
     showWhatsApp: true,
     showShipping: true,
@@ -176,6 +180,7 @@ export const dictionaries = {
     priceDisplay: "$18.57",
     oldPriceDisplay: "$24.99",
     productName: shared.productNameEn,
+    bookImage: shared.bookImageEn,
     productType: "digital",
     showWhatsApp: false,
     showShipping: false,
@@ -183,8 +188,8 @@ export const dictionaries = {
     nav: { home: "Home", book: "The Book", author: "Kelly", contact: "Contact", cart: "Cart" },
     hero: {
       badge: "New Release",
-      title1: "Before I",
-      title2: "Understood",
+      title1: "Before I Understood,",
+      title2: "You Were Already Transforming Me",
       subtitle: "The real journey of a mother discovering her son's autism. A story of",
       subtitleBold: "love, discovery and transformation",
       cta: "🛒 Buy Now",
@@ -207,7 +212,7 @@ export const dictionaries = {
       badge: "But it doesn't have to be this way",
       title: "What if there was a book that made you feel",
       titleHighlight: "that you're not alone?",
-      subtitle: '"Before I Understood" is more than a book. It\'s a hug in the form of words.',
+      subtitle: '"Before I Understood, You Were Already Transforming Me" is more than a book. It\'s a hug in the form of words.',
       cards: [
         { icon: "💝", title: "Real Comfort", desc: "Words written by someone who lived it." },
         { icon: "🧩", title: "Deep Understanding", desc: "Understand autism through maternal love." },
@@ -320,8 +325,8 @@ export const dictionaries = {
       yourOrder: "Your Order", successTitle: "Order Confirmed!",
       successText: "Your details have been saved. You will be redirected to payment shortly.",
     },
-    livroPage: { badge: "The Book", title: "Before I", titleHighlight: "Understood", desc: "The real journey of a mother discovering her son's autism.", cta: "🛒 Buy Now" },
-    kellyPage: { badge: "The Author", title: "Kelly", titleHighlight: "Marques", desc1: "Mother, writer and autism advocate.", quote: '"Did I do something wrong?"', desc2: "That question led her on a journey of self-discovery.", desc3: '"Before I Understood" was born to support other mothers.' },
+    livroPage: { badge: "The Book", title: "Before I Understood,", titleHighlight: "You Were Already Transforming Me", desc: "The real journey of a mother discovering her son's autism.", cta: "🛒 Buy Now" },
+    kellyPage: { badge: "The Author", title: "Kelly", titleHighlight: "Marques", desc1: "Mother, writer and autism advocate.", quote: '"Did I do something wrong?"', desc2: "That question led her on a journey of self-discovery.", desc3: '"Before I Understood, You Were Already Transforming Me" was born to support other mothers.' },
     contatoPage: { title: "Get in", titleHighlight: "touch", subtitle: "Have a question? We'd love to hear from you.", name: "Your name", email: "Your email", message: "Your message", cta: "Send →" },
     popup: {
       title: "Get 10% Off Your First Order!",
@@ -341,6 +346,7 @@ export const dictionaries = {
     priceDisplay: "$18.57",
     oldPriceDisplay: "$24.99",
     productName: shared.productNameEs,
+    bookImage: shared.bookImageEs,
     productType: "digital",
     showWhatsApp: false,
     showShipping: false,
@@ -348,8 +354,8 @@ export const dictionaries = {
     nav: { home: "Inicio", book: "El Libro", author: "Kelly", contact: "Contacto", cart: "Carrito" },
     hero: {
       badge: "Lanzamiento",
-      title1: "Antes de que yo",
-      title2: "entendiera",
+      title1: "Antes de que yo entendiera,",
+      title2: "ya me estabas transformando",
       subtitle: "El viaje real de una madre al descubrir el autismo de su hijo. Una historia de",
       subtitleBold: "amor, descubrimiento y transformación",
       cta: "🛒 Comprar Ahora",
@@ -372,7 +378,7 @@ export const dictionaries = {
       badge: "Pero no tiene que ser así",
       title: "¿Y si existiera un libro que te hiciera sentir",
       titleHighlight: "que no estás sola?",
-      subtitle: '"Antes de que yo entendiera" es más que un libro. Es un abrazo en forma de palabras.',
+      subtitle: '"Antes de que yo entendiera, ya me estabas transformando" es más que un libro. Es un abrazo en forma de palabras.',
       cards: [
         { icon: "💝", title: "Acogida Real", desc: "Palabras escritas por quien lo vivió." },
         { icon: "🧩", title: "Comprensión Profunda", desc: "Entiende el autismo desde el amor materno." },
@@ -485,8 +491,8 @@ export const dictionaries = {
       yourOrder: "Tu Pedido", successTitle: "¡Pedido Registrado!",
       successText: "Tus datos han sido guardados. Serás redirigido al pago.",
     },
-    livroPage: { badge: "El Libro", title: "Antes de que yo", titleHighlight: "entendiera", desc: "El viaje real de una madre al descubrir el autismo de su hijo.", cta: "🛒 Comprar ahora" },
-    kellyPage: { badge: "La Autora", title: "Kelly", titleHighlight: "Marques", desc1: "Madre, escritora y defensora de la causa autista.", quote: '"¿Hice algo mal?"', desc2: "Esa pregunta la llevó por un viaje de autodescubrimiento.", desc3: '"Antes de que yo entendiera" nació para apoyar a otras madres.' },
+    livroPage: { badge: "El Libro", title: "Antes de que yo entendiera,", titleHighlight: "ya me estabas transformando", desc: "El viaje real de una madre al descubrir el autismo de su hijo.", cta: "🛒 Comprar ahora" },
+    kellyPage: { badge: "La Autora", title: "Kelly", titleHighlight: "Marques", desc1: "Madre, escritora y defensora de la causa autista.", quote: '"¿Hice algo mal?"', desc2: "Esa pregunta la llevó por un viaje de autodescubrimiento.", desc3: '"Antes de que yo entendiera, ya me estabas transformando" nació para apoyar a otras madres.' },
     contatoPage: { title: "Ponte en", titleHighlight: "contacto", subtitle: "¿Tienes una pregunta? Nos encantaría escucharte.", name: "Tu nombre", email: "Tu email", message: "Tu mensaje", cta: "Enviar →" },
     popup: {
       title: "¡Obtén 10% de Descuento!",

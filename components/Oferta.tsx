@@ -23,7 +23,7 @@ export default function Oferta() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10 sm:mb-16"><span className="text-rosa-600 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase">{t.oferta.badge}</span><h2 className="text-2xl sm:text-3xl md:text-5xl font-playfair font-bold text-gray-900 mb-4 mt-3">{t.oferta.title} <span className="bg-gradient-to-r from-rosa-600 to-rosa-800 bg-clip-text text-transparent">{t.oferta.titleHighlight}</span></h2></div>
         <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="flex justify-center"><img src="/images/livro-produto.png" alt="Book" className="w-48 sm:w-64 md:w-80 rounded-xl shadow-2xl" /></div>
+          <div className="flex justify-center"><img src={t.bookImage} alt="Book" className="w-48 sm:w-64 md:w-80 rounded-xl shadow-2xl" /></div>
           <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-5 sm:p-6 md:p-8">
             <div className="space-y-3 mb-6">{t.oferta.items.map((item: string, i: number) => (<div key={i} className="flex items-center gap-2 text-sm sm:text-base"><span className="text-green-500 flex-shrink-0">✓</span><span className="text-gray-700">{item}</span></div>))}</div>
             <div className="border-t-2 border-dashed border-rosa-200 my-4" />

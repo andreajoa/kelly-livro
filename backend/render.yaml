@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: livro-kelly-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: PORT
+        value: 10000
