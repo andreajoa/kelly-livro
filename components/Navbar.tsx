@@ -19,10 +19,18 @@ export default function Navbar() {
     { href: `/${locale}/contato`, label: t.nav.contact },
   ]
 
+  // Nome do livro por idioma
+  const bookTitle = {
+    pt: { line1: "Antes que eu", line2: "entendesse" },
+    en: { line1: "Before I", line2: "Understood" },
+    es: { line1: "Antes de que yo", line2: "entendiera" },
+  }
+  const title = bookTitle[locale as keyof typeof bookTitle] || bookTitle.pt
+
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-lg py-2 sm:py-3" : "bg-transparent py-4 sm:py-6"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-        <Link href={`/${locale}`}><span className={`font-playfair text-lg sm:text-2xl font-bold ${scrolled ? "text-rosa-700" : "text-white"}`}>Antes que eu<span className="block text-[10px] sm:text-sm font-lato font-light tracking-[0.2em] uppercase">entendesse</span></span></Link>
+        <Link href={`/${locale}`}><span className={`font-playfair text-lg sm:text-2xl font-bold ${scrolled ? "text-rosa-700" : "text-white"}`}>{title.line1}<span className="block text-[10px] sm:text-sm font-lato font-light tracking-[0.2em] uppercase">{title.line2}</span></span></Link>
         <div className={`hidden md:flex items-center gap-6 lg:gap-8 text-xs lg:text-sm font-medium tracking-wide uppercase ${scrolled ? "text-gray-700" : "text-white/90"}`}>
           {links.map((l) => <Link key={l.href} href={l.href} className="hover:text-rosa-500 transition-colors">{l.label}</Link>)}
           <div className="flex gap-2 ml-4 text-xs">

@@ -5,8 +5,8 @@ const shared = {
   productNameEn: "Before I Understood, You Were Already Transforming Me — Kelly Marques",
   productNameEs: "Antes de que yo entendiera, ya me estabas transformando — Kelly Marques",
   bookImagePt: "/images/livro-produto.png",
-  bookImageEn: "/images/capaingles.png",
-  bookImageEs: "/images/capaingles.png",
+  bookImageEn: "/images/image11.png",
+  bookImageEs: "/images/image11.png",
 }
 
 export const dictionaries = {
