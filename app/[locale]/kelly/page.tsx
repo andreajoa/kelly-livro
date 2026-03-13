@@ -11,7 +11,8 @@ export default function KellyPage() {
       <Navbar />
       <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 bg-gradient-to-b from-rosa-50 to-white">
         <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 sm:gap-16 items-center">
+          {/* Header com foto e intro */}
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-16 items-center mb-12 sm:mb-16">
             <div className="flex justify-center animate-fade-in">
               <img src="/images/autora.png" alt="Kelly Marques" className="w-48 sm:w-64 md:w-80 rounded-2xl shadow-2xl object-cover" />
             </div>
@@ -24,6 +25,27 @@ export default function KellyPage() {
                 <p>{t.kellyPage.desc2}</p>
                 <p>{t.kellyPage.desc3}</p>
               </div>
+            </div>
+          </div>
+
+          {/* História completa */}
+          <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-6 sm:p-8 md:p-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-playfair font-bold text-gray-900 mb-6 text-center">
+              {t.locale === "pt" ? "A Jornada de Kelly" : t.locale === "es" ? "El Viaje de Kelly" : "Kelly's Journey"}
+            </h2>
+            <div className="space-y-4 sm:space-y-6 text-gray-700 leading-relaxed text-sm sm:text-base md:text-lg">
+              {t.kellyPage.paragraphs.map((p: string, i: number) => (
+                <p key={i} className={i === 0 ? "first-letter:text-4xl first-letter:font-playfair first-letter:text-rosa-600 first-letter:mr-1 first-letter:float-left" : ""}>
+                  {p}
+                </p>
+              ))}
+            </div>
+            
+            {/* Nota final */}
+            <div className="mt-8 pt-6 border-t border-rosa-200">
+              <p className="text-rosa-700 font-medium text-center italic text-sm sm:text-base">
+                {t.kellyPage.finalNote}
+              </p>
             </div>
           </div>
         </div>
