@@ -8,20 +8,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 router.post("/create", async (req, res) => {
   try {
     const { full_name, email, whatsapp, address, cep, city_state, reference_point, subtotal, shipping_cost, total, locale, currency } = req.body
-    
+
     db.prepare("INSERT INTO leads (full_name, email, whatsapp, address, cep, city_state, reference_point, source, locale) VALUES (?, ?, ?, ?, ?, ?, ?, 'checkout', ?)").run(full_name, email, whatsapp, address || "", cep || "", city_state || "", reference_point || "", locale || "pt")
-    
+
     const result = db.prepare("INSERT INTO orders (full_name, email, whatsapp, address, cep, city_state, reference_point, subtotal, shipping_cost, total, locale, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')").run(full_name, email, whatsapp, address || "", cep || "", city_state || "", reference_point || "", subtotal, shipping_cost || 0, total, locale || "pt")
-    
+
     const order_id = result.lastInsertRowid
-    
+
+    const product_type = locale === "pt" ? "physical" : "digital"
+
     const stripeCurrency = currency === "USD" ? "usd" : "brl"
-    const productName = locale === "pt" 
+    const productName = locale === "pt"
       ? "Antes que eu entendesse — Kelly Marques (Livro Físico)"
       : locale === "es"
       ? "Antes de que yo entendiera — Kelly Marques (eBook + Audiolibro)"
       : "Before I Understood — Kelly Marques (eBook + Audiobook)"
-    
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       customer_email: email,
@@ -39,18 +41,19 @@ router.post("/create", async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.FRONTEND_URL}/${locale}/checkout/success?order_id=${order_id}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.FRONTEND_URL}/${locale}/checkout/success?order_id=${order_id}&product_type=${product_type}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/${locale}/checkout?canceled=true`,
       metadata: {
         order_id: order_id.toString(),
         locale: locale,
+        product_type: product_type,
         full_name: full_name,
         whatsapp: whatsapp,
       },
     })
-    
+
     db.prepare("UPDATE orders SET stripe_session_id = ? WHERE id = ?").run(session.id, order_id)
-    
+
     res.json({ ok: true, order_id: order_id, checkout_url: session.url })
   } catch (e) {
     console.error("Stripe error:", e)
@@ -61,7 +64,7 @@ router.post("/create", async (req, res) => {
 router.get("/verify/:session_id", async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(req.params.session_id)
-    res.json({ 
+    res.json({
       paid: session.payment_status === "paid",
       customer_email: session.customer_email,
       amount_total: session.amount_total / 100,
