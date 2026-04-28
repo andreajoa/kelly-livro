@@ -52,7 +52,7 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
       const reference = order?.reference_point || "N/A"
 
       await resend.emails.send({
-        from: "Pedidos <onboarding@resend.dev>",
+        from: "Pedidos <noreply@projetogk.com>",
         to: "kellymarquesstripe@proton.me",
         subject: `🎉 Nova venda! ${full_name} — ${currency} ${amount}`,
         html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><h1 style="color:#16a34a;">✅ Nova venda!</h1><p><b>Nome:</b> ${full_name}</p><p><b>Email:</b> ${customer_email}</p><p><b>WhatsApp:</b> ${whatsapp}</p><p><b>Valor:</b> ${currency} ${amount}</p><p><b>Endereço:</b> ${address}</p><p><b>Complemento:</b> ${reference}</p><p><b>Idioma:</b> ${locale}</p><p><b>Pedido:</b> #${order_id}</p></div>`
@@ -61,7 +61,7 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
       if (customer_email) {
         const isEN = locale === "en"
         await resend.emails.send({
-          from: isEN ? "Kelly Marques <onboarding@resend.dev>" : "Kélly Marques <onboarding@resend.dev>",
+          from: isEN ? "Kelly Marques <noreply@projetogk.com>" : "Kélly Marques <noreply@projetogk.com>",
           to: customer_email,
           subject: isEN ? "✅ Purchase confirmed! Access your library now" : "✅ Compra confirmada! Acesse sua biblioteca agora",
           html: isEN ? emailClienteEN(full_name, amount, session_id, order_id) : emailClientePT(full_name, amount, session_id, order_id)
