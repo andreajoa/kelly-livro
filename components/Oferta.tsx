@@ -132,9 +132,9 @@ export default function Oferta() {
             <div className="border-t-2 border-dashed border-rosa-200 my-4" />
             <div className="text-center">
               <p className="text-gray-400 text-xs mb-1">
-                De <span className="line-through">R$ {(t as any).digitalOldPrice ?? 147.toFixed(2)}</span> por
+                De <span className="line-through">R$ {((t as any).digitalOldPrice ?? 147).toFixed(2)}</span> por
               </p>
-              <span className="text-3xl sm:text-4xl font-playfair font-bold text-rosa-700">R$ {(t.digitalPrice ?? 97).toFixed(2)}</span>
+              <span className="text-3xl sm:text-4xl font-playfair font-bold text-rosa-700">R$ {((t as any).digitalPrice ?? 97).toFixed(2)}</span>
               <p className="text-gray-400 text-xs mb-4 mt-1">à vista no cartão ou PIX</p>
               <button onClick={() => handleComprar("digital")}
                 className="w-full mt-2 bg-gradient-to-r from-rosa-600 to-rosa-700 hover:from-rosa-700 hover:to-rosa-800 text-white font-bold py-3 rounded-full text-sm shadow-2xl uppercase tracking-wider">
