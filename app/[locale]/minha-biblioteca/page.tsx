@@ -198,11 +198,11 @@ function LibraryContent() {
     </div>
   )
 
-  const d = LOCALE_DATA[locale as keyof typeof LOCALE_DATA] ?? LOCALE_DATA.en
-
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [activeTitle, setActiveTitle] = useState("")
+
+  const d = LOCALE_DATA[locale as keyof typeof LOCALE_DATA] ?? LOCALE_DATA.en
 
   const playTrack = (idx: number) => {
     const track = d.audios[idx]
