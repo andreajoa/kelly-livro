@@ -214,10 +214,11 @@ function LibraryContent() {
               onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)" }}
               onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "transparent" }}
               onClick={() => playTrack(i)}>
-              <div className="w-6 flex items-center justify-center flex-shrink-0 text-sm tabular-nums" style={{ color: isActive ? "#f472b6" : "rgba(255,255,255,0.4)" }}>
+              <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-full transition-all"
+                style={{ background: isActive ? "rgba(236,72,153,0.2)" : "rgba(255,255,255,0.07)" }}>
                 {isActive
                   ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#f472b6"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                  : i + 1}
+                  : <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>}
               </div>
               <span className="flex-1 text-sm truncate" style={{ color: isActive ? "#f472b6" : "white" }}>{track.title}</span>
               <span className="text-xs tabular-nums w-10 text-right flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>{track.duration}</span>
