@@ -9,9 +9,11 @@ app.use(cors({
   origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, process.env.FRONTEND_URL.replace('https://', 'https://www.')] : "*",
   credentials: true
 }))
+app.use('/api/webhook', webhookRoutes)
 app.use(express.json())
 
 // Rotas
+const webhookRoutes = require('./routes/webhook')
 const analyticsRoutes = require("./routes/analytics")
 const ordersRoutes = require("./routes/orders")
 
