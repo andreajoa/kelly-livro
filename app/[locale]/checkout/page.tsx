@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { useCart } from "@/store/cartStore"
@@ -7,7 +7,7 @@ import { createOrder, trackEvent } from "@/lib/api"
 import { useLang } from "@/lib/LangContext"
 
 export default function CheckoutPage() {
-  const { items, shippingCost, clearCart } = useCart()
+  const { items, shippingCost, cep, address } = useCart()
   const { t, locale } = useLang()
   const currencySymbol = t.currency === "USD" ? "$" : "R$"
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -15,6 +15,16 @@ export default function CheckoutPage() {
   const total = subtotal + shipping
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ full_name: "", email: "", whatsapp: "", address: "", cep: "", city_state: "", reference_point: "" })
+
+  useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      cep: cep || "",
+      address: address ? `${address.street}, ${address.neighborhood}` : "",
+      city_state: address?.cityState || "",
+    }))
+  }, [cep, address])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,12 +79,12 @@ export default function CheckoutPage() {
                 </div>
                 {t.showShipping && (
                   <>
-                    <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.address} *</label><input name="address" required value={form.address} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
+                    <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.address} *</label><input name="address" required value={form.address} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" placeholder="Rua, numero, bairro" /></div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.cep} *</label><input name="cep" required value={form.cep} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
-                      <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.cityState} *</label><input name="city_state" required value={form.city_state} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
+                      <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.cep} *</label><input name="cep" required value={form.cep} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm bg-gray-50" /></div>
+                      <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.cityState} *</label><input name="city_state" required value={form.city_state} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm bg-gray-50" /></div>
                     </div>
-                    <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.reference}</label><input name="reference_point" value={form.reference_point} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
+                    <div><label className="text-xs sm:text-sm font-semibold">Numero e Complemento *</label><input name="reference_point" required value={form.reference_point} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" placeholder="Ex: Nr 123, Apto 45, proximo ao mercado" /></div>
                   </>
                 )}
                 <div className="pt-4">
