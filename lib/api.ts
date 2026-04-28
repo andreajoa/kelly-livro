@@ -21,7 +21,8 @@ export async function getDashboard(locale?: string) {
 
 export async function verifyAccess(session_id: string) {
   try {
-    const res = await fetch(`${API}/api/orders/verify-access/${session_id}`)
+    const res = await fetch(`/api/verify-access?session_id=${session_id}`)
+    if (!res.ok) return { ok: false }
     return res.json()
   } catch (e) {
     return { ok: false }
