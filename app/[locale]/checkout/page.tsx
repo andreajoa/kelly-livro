@@ -32,7 +32,8 @@ export default function CheckoutPage() {
     setLoading(true)
     try {
       await trackEvent("submit_checkout", `/${locale}/checkout`, { total, locale })
-      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale, currency: t.currency })
+      const productType = items[0]?.productType || (locale === "pt" ? "physical" : "digital")
+      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale, currency: t.currency, product_type: productType })
       if (result.ok && result.checkout_url) {
         window.location.href = result.checkout_url
       } else {

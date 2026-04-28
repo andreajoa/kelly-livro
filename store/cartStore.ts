@@ -5,6 +5,7 @@ export interface CartItem {
   name: string
   price: number
   quantity: number
+  productType?: "physical" | "digital"
 }
 
 export interface AddressData {

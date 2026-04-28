@@ -15,7 +15,7 @@ router.post("/create", async (req, res) => {
 
     const order_id = result.lastInsertRowid
 
-    const product_type = locale === "pt" ? "physical" : "digital"
+    const product_type = req.body.product_type || (locale === "pt" ? "physical" : "digital")
 
     const stripeCurrency = currency === "USD" ? "usd" : "brl"
     const productName = locale === "pt"
@@ -114,3 +114,14 @@ router.post("/lead-contact", (req, res) => {
 })
 
 module.exports = router
+
+router.get("/verify-access/:session_id", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.params.session_id)
+    const paid = session.payment_status === "paid"
+    const product_type = session.metadata?.product_type || "digital"
+    res.json({ ok: paid, product_type })
+  } catch (e) {
+    res.status(403).json({ ok: false, error: "Invalid session" })
+  }
+})

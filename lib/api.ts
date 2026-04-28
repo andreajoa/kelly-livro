@@ -18,3 +18,12 @@ export async function getDashboard(locale?: string) {
   const res = await fetch(url)
   return res.json()
 }
+
+export async function verifyAccess(session_id: string) {
+  try {
+    const res = await fetch(`${API}/api/orders/verify-access/${session_id}`)
+    return res.json()
+  } catch (e) {
+    return { ok: false }
+  }
+}

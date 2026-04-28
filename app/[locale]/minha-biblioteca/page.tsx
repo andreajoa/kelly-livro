@@ -5,6 +5,7 @@ import Image from "next/image"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { useCart } from "@/store/cartStore"
+import { verifyAccess } from "@/lib/api"
 import { useLang } from "@/lib/LangContext"
 
 const BASE = "https://pub-66c21cbcbdf1471795c366e7560d3600.r2.dev"
@@ -170,8 +171,31 @@ function LibraryContent() {
   const { clearCart } = useCart()
   const { locale } = useLang()
   const orderId = searchParams.get("order_id")
+  const sessionId = searchParams.get("session_id") || ""
+  const [access, setAccess] = useState<"loading"|"ok"|"denied">("loading")
+
+  useEffect(() => {
+    if (!sessionId) { setAccess("denied"); return }
+    verifyAccess(sessionId).then(r => setAccess(r.ok ? "ok" : "denied"))
+  }, [sessionId])
 
   useEffect(() => { clearCart() }, [clearCart])
+
+  if (access === "loading") return (
+    <div className="text-center pt-32">
+      <div className="text-4xl mb-4">⏳</div>
+      <p style={{ color: "rgba(255,255,255,0.4)" }}>Verificando acesso...</p>
+    </div>
+  )
+
+  if (access === "denied") return (
+    <div className="text-center pt-32 px-6 max-w-md mx-auto">
+      <div className="text-5xl mb-4">🔒</div>
+      <h2 className="text-xl font-bold text-white mb-3">Acesso não autorizado</h2>
+      <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>Este conteúdo é exclusivo para compradores. Finalize sua compra para acessar.</p>
+      <a href={`/${locale}`} className="bg-gradient-to-r from-rosa-600 to-rosa-700 text-white font-bold py-3 px-8 rounded-full inline-block">Ver oferta</a>
+    </div>
+  )
 
   const d = LOCALE_DATA[locale as keyof typeof LOCALE_DATA] ?? LOCALE_DATA.en
 
