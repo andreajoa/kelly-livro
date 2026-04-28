@@ -5,14 +5,12 @@ import Image from "next/image"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { useCart } from "@/store/cartStore"
-import { verifyAccess } from "@/lib/api"
 import { useLang } from "@/lib/LangContext"
 
 const BASE = "https://pub-66c21cbcbdf1471795c366e7560d3600.r2.dev"
 
 const LOCALE_DATA = {
   pt: {
-    congrats: "Parabéns pela sua compra!",
     areaLabel: "BIBLIOTECA EXCLUSIVA",
     downloadPdf: "↓ Baixar eBook (PDF)",
     backHome: "← Voltar ao início",
@@ -29,14 +27,13 @@ const LOCALE_DATA = {
       { title: "Capítulo 3",       duration: "7:58", url: `${BASE}/audiobook-pt/PT/Cap%203.mp3` },
       { title: "Capítulo 4",       duration: "2:10", url: `${BASE}/audiobook-pt/PT/Cap%204.mp3` },
       { title: "Capítulo 5",       duration: "5:20", url: `${BASE}/audiobook-pt/PT/Cap%205.mp3` },
-      { title: "Capítulo 6",       duration: "11:44",url: `${BASE}/audiobook-pt/PT/Cap%206.mp3` },
+      { title: "Capítulo 6",       duration: "11:44", url: `${BASE}/audiobook-pt/PT/Cap%206.mp3` },
       { title: "Epílogo",          duration: "1:40", url: `${BASE}/audiobook-pt/PT/Cap%209%20Epilogo.mp3` },
       { title: "Cartas para Deus", duration: "0:32", url: `${BASE}/audiobook-pt/PT/Cap%2010%20Cartas%20para%20Deus.mp3` },
       { title: "Faixa Bônus",      duration: "1:02", url: `${BASE}/audiobook-pt/PT/00.mp3` },
     ],
   },
   en: {
-    congrats: "Congratulations on your purchase!",
     areaLabel: "EXCLUSIVE LIBRARY",
     downloadPdf: "↓ Download eBook (PDF)",
     backHome: "← Back to Home",
@@ -57,7 +54,6 @@ const LOCALE_DATA = {
     ],
   },
   es: {
-    congrats: "¡Felicitaciones por tu compra!",
     areaLabel: "BIBLIOTECA EXCLUSIVA",
     downloadPdf: "↓ Descargar eBook (PDF)",
     backHome: "← Volver al inicio",
@@ -85,13 +81,35 @@ function formatTime(s: number) {
   return `${m}:${ss.toString().padStart(2, "0")}`
 }
 
-function PlayerBar({ audio, title }: { audio: HTMLAudioElement | null; title: string }) {
+function LibraryContent() {
+  const searchParams = useSearchParams()
+  const { clearCart } = useCart()
+  const { locale } = useLang()
+  const orderId = searchParams.get("order_id")
+  const sessionId = searchParams.get("session_id") || ""
+
+  const [access, setAccess] = useState<"loading" | "ok" | "denied">("loading")
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [activeIdx, setActiveIdx] = useState<number | null>(null)
+  const [activeTitle, setActiveTitle] = useState("")
   const [playing, setPlaying] = useState(false)
   const [current, setCurrent] = useState(0)
   const [duration, setDuration] = useState(0)
   const [vol, setVol] = useState(1)
 
   useEffect(() => {
+    if (!sessionId) { setAccess("denied"); return }
+    if (sessionId === "admin-kelly-2024") { setAccess("ok"); return }
+    fetch(`/api/verify-access?session_id=${sessionId}`)
+      .then(r => r.ok ? r.json() : { ok: false })
+      .then(r => setAccess(r.ok ? "ok" : "denied"))
+      .catch(() => setAccess("denied"))
+  }, [sessionId])
+
+  useEffect(() => { clearCart() }, [clearCart])
+
+  useEffect(() => {
+    const audio = audioRef.current
     if (!audio) return
     const onTime = () => setCurrent(audio.currentTime)
     const onDur = () => setDuration(audio.duration)
@@ -107,80 +125,7 @@ function PlayerBar({ audio, title }: { audio: HTMLAudioElement | null; title: st
       audio.removeEventListener("play", onPlay)
       audio.removeEventListener("pause", onPause)
     }
-  }, [audio])
-
-  const toggle = () => audio && (playing ? audio.pause() : audio.play())
-  const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!audio) return
-    audio.currentTime = Number(e.target.value)
-    setCurrent(Number(e.target.value))
-  }
-  const changeVol = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = Number(e.target.value)
-    setVol(v)
-    if (audio) audio.volume = v
-  }
-
-  const pct = duration ? (current / duration) * 100 : 0
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 px-4 py-3 sm:px-8"
-      style={{
-        background: "rgba(15,10,20,0.95)",
-        backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(244,114,182,0.15)",
-      }}>
-      <div className="max-w-3xl mx-auto flex flex-col gap-2">
-        {/* Barra de progresso */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs tabular-nums" style={{ color: "rgba(255,255,255,0.4)", minWidth: "36px" }}>{formatTime(current)}</span>
-          <div className="relative flex-1 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
-            <div className="absolute left-0 top-0 h-1 rounded-full" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#ec4899,#be185d)" }} />
-            <input type="range" min={0} max={duration || 100} step={0.1} value={current} onChange={seek}
-              className="absolute inset-0 w-full opacity-0 cursor-pointer h-1" />
-          </div>
-          <span className="text-xs tabular-nums" style={{ color: "rgba(255,255,255,0.4)", minWidth: "36px", textAlign: "right" }}>{formatTime(duration)}</span>
-        </div>
-
-        {/* Controles */}
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-xs truncate flex-1" style={{ color: "rgba(255,255,255,0.55)" }}>{title}</p>
-          <button onClick={toggle}
-            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all hover:scale-110 active:scale-95"
-            style={{ background: "linear-gradient(135deg,#ec4899,#be185d)", boxShadow: "0 4px 16px rgba(236,72,153,0.4)" }}>
-            {playing
-              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              : <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-            }
-          </button>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            </svg>
-            <input type="range" min={0} max={1} step={0.05} value={vol} onChange={changeVol}
-              className="w-16 h-1 cursor-pointer accent-pink-500" />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function LibraryContent() {
-  const searchParams = useSearchParams()
-  const { clearCart } = useCart()
-  const { locale } = useLang()
-  const orderId = searchParams.get("order_id")
-  const sessionId = searchParams.get("session_id") || ""
-  const [access, setAccess] = useState<"loading"|"ok"|"denied">("loading")
-
-  useEffect(() => {
-    if (!sessionId) { setAccess("denied"); return }
-    if (sessionId === "admin-kelly-2024") { setAccess("ok"); return }
-    verifyAccess(sessionId).then(r => setAccess(r.ok ? "ok" : "denied"))
-  }, [sessionId])
-
-  useEffect(() => { clearCart() }, [clearCart])
+  }, [activeIdx])
 
   if (access === "loading") return (
     <div className="text-center pt-32">
@@ -193,16 +138,13 @@ function LibraryContent() {
     <div className="text-center pt-32 px-6 max-w-md mx-auto">
       <div className="text-5xl mb-4">🔒</div>
       <h2 className="text-xl font-bold text-white mb-3">Acesso não autorizado</h2>
-      <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>Este conteúdo é exclusivo para compradores. Finalize sua compra para acessar.</p>
-      <a href={`/${locale}`} className="bg-gradient-to-r from-rosa-600 to-rosa-700 text-white font-bold py-3 px-8 rounded-full inline-block">Ver oferta</a>
+      <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>Este conteúdo é exclusivo para compradores.</p>
+      <a href={`/${locale}`} className="bg-pink-700 text-white font-bold py-3 px-8 rounded-full inline-block">Ver oferta</a>
     </div>
   )
 
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [activeIdx, setActiveIdx] = useState<number | null>(null)
-  const [activeTitle, setActiveTitle] = useState("")
-
   const d = LOCALE_DATA[locale as keyof typeof LOCALE_DATA] ?? LOCALE_DATA.en
+  const pct = duration ? (current / duration) * 100 : 0
 
   const playTrack = (idx: number) => {
     const track = d.audios[idx]
@@ -219,21 +161,25 @@ function LibraryContent() {
     setActiveTitle(track.title)
   }
 
+  const toggle = () => audioRef.current && (playing ? audioRef.current.pause() : audioRef.current.play())
+  const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!audioRef.current) return
+    audioRef.current.currentTime = Number(e.target.value)
+    setCurrent(Number(e.target.value))
+  }
+  const changeVol = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value)
+    setVol(v)
+    if (audioRef.current) audioRef.current.volume = v
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-32 pt-6 space-y-8">
-
-      {/* Hero — capa + info estilo Spotify */}
       <div className="relative rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-center sm:items-end"
-        style={{
-          background: "linear-gradient(to bottom, rgba(120,20,60,0.6) 0%, rgba(15,10,20,0.98) 100%)",
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}>
-        {/* Capa real */}
+        style={{ background: "linear-gradient(to bottom, rgba(120,20,60,0.6) 0%, rgba(15,10,20,0.98) 100%)", border: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex-shrink-0 shadow-2xl rounded-xl overflow-hidden" style={{ width: "140px", height: "210px", position: "relative" }}>
           <Image src={d.cover} alt={d.title} fill style={{ objectFit: "cover" }} />
         </div>
-
-        {/* Info */}
         <div className="flex-1 text-center sm:text-left">
           <p className="text-xs font-bold tracking-widest mb-2" style={{ color: "rgba(244,114,182,0.7)" }}>{d.areaLabel}</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug whitespace-pre-line mb-1">{d.title}</h1>
@@ -253,19 +199,12 @@ function LibraryContent() {
         </div>
       </div>
 
-      {/* Tracklist estilo Spotify */}
       <div>
         <div className="flex items-center gap-4 px-4 pb-2 mb-1 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
           <span className="text-xs w-6 text-center" style={{ color: "rgba(255,255,255,0.3)" }}>#</span>
           <span className="text-xs flex-1" style={{ color: "rgba(255,255,255,0.3)" }}>{d.audioTitle}</span>
-          <span className="text-xs w-10 text-right" style={{ color: "rgba(255,255,255,0.3)" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </span>
           <span className="text-xs w-6" />
         </div>
-
         {d.audios.map((track, i) => {
           const isActive = activeIdx === i
           return (
@@ -274,28 +213,14 @@ function LibraryContent() {
               style={{ background: isActive ? "rgba(236,72,153,0.10)" : "transparent" }}
               onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)" }}
               onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "transparent" }}
-              onClick={() => playTrack(i)}
-            >
-              {/* Número / play icon */}
-              <div className="w-6 flex items-center justify-center flex-shrink-0">
-                <span className="group-hover:hidden text-sm tabular-nums" style={{ color: isActive ? "#f472b6" : "rgba(255,255,255,0.4)" }}>
-                  {isActive
-                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#f472b6"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                    : i + 1
-                  }
-                </span>
-                <span className="hidden group-hover:flex items-center justify-center">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-                </span>
+              onClick={() => playTrack(i)}>
+              <div className="w-6 flex items-center justify-center flex-shrink-0 text-sm tabular-nums" style={{ color: isActive ? "#f472b6" : "rgba(255,255,255,0.4)" }}>
+                {isActive
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#f472b6"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  : i + 1}
               </div>
-
-              {/* Título */}
               <span className="flex-1 text-sm truncate" style={{ color: isActive ? "#f472b6" : "white" }}>{track.title}</span>
-
-              {/* Duração */}
               <span className="text-xs tabular-nums w-10 text-right flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>{track.duration}</span>
-
-              {/* Download */}
               <a href={track.url} download onClick={e => e.stopPropagation()}
                 className="w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                 style={{ color: "rgba(244,114,182,0.7)" }}>
@@ -308,10 +233,37 @@ function LibraryContent() {
         })}
       </div>
 
-      {/* Voltar */}
+      {activeIdx !== null && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 px-4 py-3 sm:px-8"
+          style={{ background: "rgba(15,10,20,0.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(244,114,182,0.15)" }}>
+          <div className="max-w-3xl mx-auto flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs tabular-nums" style={{ color: "rgba(255,255,255,0.4)", minWidth: "36px" }}>{formatTime(current)}</span>
+              <div className="relative flex-1 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <div className="absolute left-0 top-0 h-1 rounded-full" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#ec4899,#be185d)" }} />
+                <input type="range" min={0} max={duration || 100} step={0.1} value={current} onChange={seek} className="absolute inset-0 w-full opacity-0 cursor-pointer h-1" />
+              </div>
+              <span className="text-xs tabular-nums" style={{ color: "rgba(255,255,255,0.4)", minWidth: "36px", textAlign: "right" }}>{formatTime(duration)}</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs truncate flex-1" style={{ color: "rgba(255,255,255,0.55)" }}>{activeTitle}</p>
+              <button onClick={toggle}
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg,#ec4899,#be185d)", boxShadow: "0 4px 16px rgba(236,72,153,0.4)" }}>
+                {playing
+                  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  : <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>}
+              </button>
+              <div className="flex items-center gap-1">
+                <input type="range" min={0} max={1} step={0.05} value={vol} onChange={changeVol} className="w-16 h-1 cursor-pointer accent-pink-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="text-center pt-2 pb-4">
-        <a href={`/${locale}`} className="text-sm font-medium transition-opacity hover:opacity-70"
-          style={{ color: "rgba(244,114,182,0.6)" }}>
+        <a href={`/${locale}`} className="text-sm font-medium hover:opacity-70" style={{ color: "rgba(244,114,182,0.6)" }}>
           {d.backHome}
         </a>
       </div>
@@ -320,23 +272,12 @@ function LibraryContent() {
 }
 
 export default function MinhabibliotecaPage() {
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
-  const [activeTitle, setActiveTitle] = useState("")
-
   return (
     <main>
       <Navbar />
-      <section
-        className="pt-20 sm:pt-24 min-h-screen flex items-start justify-center"
-        style={{
-          background: "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(120,20,60,0.55) 0%, transparent 55%), #0f0a14",
-        }}
-      >
-        <Suspense fallback={
-          <div className="text-center pt-32">
-            <div className="text-3xl mb-3">⏳</div>
-          </div>
-        }>
+      <section className="pt-20 sm:pt-24 min-h-screen flex items-start justify-center"
+        style={{ background: "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(120,20,60,0.55) 0%, transparent 55%), #0f0a14" }}>
+        <Suspense fallback={<div className="text-center pt-32"><div className="text-3xl mb-3">⏳</div></div>}>
           <LibraryContent />
         </Suspense>
       </section>
