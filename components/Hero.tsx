@@ -4,11 +4,24 @@ import { v4 as uuidv4 } from "uuid"
 import { useRouter } from "next/navigation"
 import { trackEvent } from "@/lib/api"
 import { useLang } from "@/lib/LangContext"
+import { useEffect, useRef } from "react"
 
 export default function Hero() {
   const addItem = useCart((s) => s.addItem)
   const router = useRouter()
   const { t, locale } = useLang()
+  const videoRef = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    v.muted = true
+    v.setAttribute("playsinline", "")
+    v.setAttribute("webkit-playsinline", "")
+    const play = () => { v.play().catch(() => {}) }
+    play()
+    document.addEventListener("touchstart", play, { once: true })
+    return () => document.removeEventListener("touchstart", play)
+  }, [])
 
   const handleComprar = () => {
     addItem({ id: uuidv4(), name: t.productName, price: t.price, quantity: 1 })
@@ -21,11 +34,14 @@ export default function Hero() {
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
+          webkit-playsinline="true"
+          x5-playsinline="true"
         >
           <source src="/videos/banner1.mp4" type="video/mp4" />
         </video>
