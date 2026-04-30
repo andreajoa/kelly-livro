@@ -13,9 +13,8 @@ export default function CheckoutPage() {
   const needsShipping = t.showShipping && !isDigital
   const [useUSD, setUseUSD] = useState(false)
   const currencySymbol = (useUSD || t.currency === "USD") ? "$" : "R$"
-  const usdRate = 5.75
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const subtotalDisplay = useUSD ? subtotal / usdRate : subtotal
+  const subtotalDisplay = useUSD ? 18.57 : subtotal
   const shipping = needsShipping ? (shippingCost || 0) : 0
   const total = subtotalDisplay + shipping
   const [loading, setLoading] = useState(false)
@@ -38,7 +37,7 @@ export default function CheckoutPage() {
     try {
       await trackEvent("submit_checkout", `/${locale}/checkout`, { total, locale })
       const productType = isDigital ? "digital" : (items[0]?.productType || "physical")
-      const result = await createOrder({ ...form, subtotal: subtotalDisplay, shipping_cost: shipping, total, locale, currency: useUSD ? "USD" : t.currency, product_type: productType })
+      const result = await createOrder({ ...form, subtotal: subtotalDisplay, shipping_cost: shipping, total, locale, currency: (useUSD || t.currency === "USD") ? "USD" : "BRL", product_type: productType })
       if (result.ok && result.checkout_url) {
         window.location.href = result.checkout_url
       } else {
