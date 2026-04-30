@@ -44,7 +44,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-3">{t.footer.contactTitle}</h4>
             <div className="flex flex-col gap-1.5 text-xs sm:text-sm">
-              <a href="mailto:contact@kelly-moraes.com" className="hover:text-rosa-400">📧 contact@kelly-moraes.com</a>
+              <a href="mailto:kellymarquesstripe@proton.me" className="hover:text-rosa-400">📧 kellymarquesstripe@proton.me</a>
               <a href="https://wa.me/18572443842" target="_blank" rel="noopener noreferrer" className="hover:text-rosa-400">📱 {contactLabel}: +1 (857) 244-3842</a>
             </div>
           </div>

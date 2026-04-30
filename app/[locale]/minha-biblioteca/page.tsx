@@ -16,7 +16,7 @@ const LOCALE_DATA = {
     backHome: "← Voltar ao início",
     orderLabel: "Pedido",
     title: "Antes que eu entendesse\nvocê já me transformava",
-    author: "Kélly Marques",
+    author: "Kelly Marques",
     audioTitle: "AUDIOBOOK",
     cover: "/images/capa-livro.png",
     pdf: `${BASE}/ebook-pt/PT/ebook%20(PT)%20DIAG%20-%20Kelly%20Marques.pdf`,
