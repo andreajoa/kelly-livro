@@ -11,7 +11,7 @@ export default function CarrinhoPage() {
   const { items, removeItem, shippingCost } = useCart()
   const { t, locale } = useLang()
   const isDigital = items.some(i => i.productType === "digital")
-  const needsShipping = needsShipping && !isDigital
+  const needsShipping = t.showShipping && !isDigital
   const currencySymbol = t.currency === "USD" ? "$" : "R$"
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping = needsShipping ? (shippingCost || 0) : 0
