@@ -6,6 +6,19 @@ import { trackEvent } from "@/lib/api"
 import { useLang } from "@/lib/LangContext"
 import ShippingCalculator from "./ShippingCalculator"
 
+function ShippingNotice({ locale }: { locale: string }) {
+  return (
+    <div className="flex flex-col sm:flex-row gap-2 justify-center items-center mb-8 text-xs sm:text-sm">
+      <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium">
+        🌍 eBook + Audiobook — Disponível globalmente
+      </span>
+      <span className="bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-medium">
+        🇧🇷 Livro físico — Envio apenas para o Brasil
+      </span>
+    </div>
+  )
+}
+
 export default function Oferta() {
   const addItem = useCart((s) => s.addItem)
   const router = useRouter()
@@ -31,6 +44,7 @@ export default function Oferta() {
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-playfair font-bold text-gray-900 mb-4 mt-3">
               {t.oferta.title} <span className="bg-gradient-to-r from-rosa-600 to-rosa-800 bg-clip-text text-transparent">{t.oferta.titleHighlight}</span>
             </h2>
+      <ShippingNotice locale={locale} />
           </div>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="flex justify-center">

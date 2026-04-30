@@ -9,10 +9,15 @@ import { useLang } from "@/lib/LangContext"
 export default function CheckoutPage() {
   const { items, shippingCost, cep, address } = useCart()
   const { t, locale } = useLang()
-  const currencySymbol = t.currency === "USD" ? "$" : "R$"
+  const isDigital = items.some(i => i.productType === "digital")
+  const needsShipping = t.showShipping && !isDigital
+  const [useUSD, setUseUSD] = useState(false)
+  const currencySymbol = (useUSD || t.currency === "USD") ? "$" : "R$"
+  const usdRate = 5.75
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = t.showShipping ? (shippingCost || 0) : 0
-  const total = subtotal + shipping
+  const subtotalDisplay = useUSD ? subtotal / usdRate : subtotal
+  const shipping = needsShipping ? (shippingCost || 0) : 0
+  const total = subtotalDisplay + shipping
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ full_name: "", email: "", whatsapp: "", address: "", cep: "", city_state: "", reference_point: "" })
 
@@ -32,8 +37,8 @@ export default function CheckoutPage() {
     setLoading(true)
     try {
       await trackEvent("submit_checkout", `/${locale}/checkout`, { total, locale })
-      const productType = items[0]?.productType || (locale === "pt" ? "physical" : "digital")
-      const result = await createOrder({ ...form, subtotal, shipping_cost: shipping, total, locale, currency: t.currency, product_type: productType })
+      const productType = isDigital ? "digital" : (items[0]?.productType || "physical")
+      const result = await createOrder({ ...form, subtotal: subtotalDisplay, shipping_cost: shipping, total, locale, currency: useUSD ? "USD" : t.currency, product_type: productType })
       if (result.ok && result.checkout_url) {
         window.location.href = result.checkout_url
       } else {
@@ -71,6 +76,20 @@ export default function CheckoutPage() {
           <h1 className="text-center text-2xl sm:text-4xl font-playfair font-bold text-gray-900 mb-8 sm:mb-12">{t.checkoutPage.title}</h1>
           <div className="grid lg:grid-cols-5 gap-8 sm:gap-12">
             <div className="lg:col-span-3">
+              {isDigital && locale === "pt" && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between gap-3">
+                  <span className="text-xs text-blue-700">💳 Pagar em dólar (USD)?</span>
+                  <button type="button" onClick={() => setUseUSD(!useUSD)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${useUSD ? "bg-blue-600 text-white" : "bg-white border border-blue-400 text-blue-600"}`}>
+                    {useUSD ? "$ USD ✓" : "R$ BRL"}
+                  </button>
+                </div>
+              )}
+              {isDigital && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700">
+                  📦 <strong>Entrega digital:</strong> Você receberá o acesso por e-mail após o pagamento. Nenhum endereço necessário.
+                </div>
+              )}
               <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">{t.checkoutPage.deliveryInfo}</h2>
               <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.fullName} *</label><input name="full_name" required value={form.full_name} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
@@ -78,7 +97,7 @@ export default function CheckoutPage() {
                   <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.email} *</label><input name="email" type="email" required value={form.email} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
                   <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.whatsapp} *</label><input name="whatsapp" type="tel" required value={form.whatsapp} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" /></div>
                 </div>
-                {t.showShipping && (
+                {needsShipping && (
                   <>
                     <div><label className="text-xs sm:text-sm font-semibold">{t.checkoutPage.address} *</label><input name="address" required value={form.address} onChange={handleChange} className="w-full mt-1 border border-gray-300 p-2.5 sm:p-3 rounded-lg text-sm" placeholder="Rua, numero, bairro" /></div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -101,8 +120,8 @@ export default function CheckoutPage() {
                 <h2 className="text-lg font-bold mb-3 border-b pb-3">{t.checkoutPage.yourOrder}</h2>
                 {items.map(item => (<div key={item.id} className="flex justify-between py-2 text-xs sm:text-sm"><span className="truncate pr-2">{item.name}</span><span className="font-semibold flex-shrink-0">{currencySymbol} {item.price.toFixed(2)}</span></div>))}
                 <div className="border-t mt-3 pt-3 space-y-1 text-xs sm:text-sm">
-                  <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{currencySymbol} {subtotal.toFixed(2)}</span></div>
-                  {t.showShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{currencySymbol} {shipping.toFixed(2)}</span></div>}
+                  <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{currencySymbol} {subtotalDisplay.toFixed(2)}</span></div>
+                  {needsShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{currencySymbol} {shipping.toFixed(2)}</span></div>}
                   <div className="flex justify-between font-bold text-base mt-2"><span>{t.carrinho.total}</span><span>{currencySymbol} {total.toFixed(2)}</span></div>
                 </div>
               </div>

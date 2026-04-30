@@ -10,11 +10,13 @@ import { useLang } from "@/lib/LangContext"
 export default function CarrinhoPage() {
   const { items, removeItem, shippingCost } = useCart()
   const { t, locale } = useLang()
+  const isDigital = items.some(i => i.productType === "digital")
+  const needsShipping = needsShipping && !isDigital
   const currencySymbol = t.currency === "USD" ? "$" : "R$"
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = t.showShipping ? (shippingCost || 0) : 0
+  const shipping = needsShipping ? (shippingCost || 0) : 0
   const total = subtotal + shipping
-  const canCheckout = t.showShipping ? !!shippingCost : items.length > 0
+  const canCheckout = needsShipping ? !!shippingCost : items.length > 0
 
   return (
     <main>
@@ -49,9 +51,9 @@ export default function CarrinhoPage() {
                   <h2 className="text-lg font-bold mb-3 border-b pb-3">{t.carrinho.summary}</h2>
                   <div className="space-y-2 text-gray-600 text-sm">
                     <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{currencySymbol} {subtotal.toFixed(2)}</span></div>
-                    {t.showShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{shippingCost ? `${currencySymbol} ${shippingCost.toFixed(2)}` : "—"}</span></div>}
+                    {needsShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{shippingCost ? `${currencySymbol} ${shippingCost.toFixed(2)}` : "—"}</span></div>}
                   </div>
-                  {t.showShipping && <ShippingCalculator />}
+                  {needsShipping && <ShippingCalculator />}
                   <div className="flex justify-between font-bold text-lg mt-4 border-t pt-3"><span>{t.carrinho.total}</span><span>{currencySymbol} {total.toFixed(2)}</span></div>
                   {canCheckout ? (
                     <Link href={`/${locale}/checkout`} onClick={() => trackEvent("click_checkout", "/carrinho", { total })} className="block w-full text-center mt-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3 rounded-lg text-sm">{t.carrinho.checkout}</Link>
