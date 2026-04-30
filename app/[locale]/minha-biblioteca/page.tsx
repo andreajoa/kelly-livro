@@ -87,6 +87,7 @@ function LibraryContent() {
   const { locale } = useLang()
   const orderId = searchParams.get("order_id")
   const sessionId = searchParams.get("session_id") || ""
+  const langParam = searchParams.get("lang") as "pt" | "en" | null
 
   const [access, setAccess] = useState<"loading" | "ok" | "denied">("loading")
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -143,7 +144,8 @@ function LibraryContent() {
     </div>
   )
 
-  const d = LOCALE_DATA[locale as keyof typeof LOCALE_DATA] ?? LOCALE_DATA.en
+  const resolvedLang = langParam || (locale === "pt" ? "pt" : "en")
+  const d = LOCALE_DATA[resolvedLang as keyof typeof LOCALE_DATA] ?? LOCALE_DATA.en
   const pct = duration ? (current / duration) * 100 : 0
 
   const playTrack = (idx: number) => {

@@ -39,7 +39,9 @@ export default function CheckoutPage() {
       const productType = isDigital ? "digital" : (items[0]?.productType || "physical")
       const result = await createOrder({ ...form, subtotal: subtotalDisplay, shipping_cost: shipping, total, locale, currency: (useUSD || t.currency === "USD") ? "USD" : "BRL", product_type: productType })
       if (result.ok && result.checkout_url) {
-        window.location.href = result.checkout_url
+        const lang = (items[0] as any)?.language || (locale === "pt" ? "pt" : "en")
+        const urlWithLang = result.checkout_url + (result.checkout_url.includes("?") ? "&" : "?") + "lang=" + lang
+        window.location.href = urlWithLang
       } else {
         alert("Error creating order")
       }
