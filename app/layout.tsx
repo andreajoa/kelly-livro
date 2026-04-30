@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "Kelly Marques",
     images: [
       {
-        url: "https://www.projetogk.com/images/capa-livro.png",
+        url: "https://www.projetogk.com/images/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Capa do livro Antes que eu entendesse - Kelly Marques",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Antes que eu entendesse — Kelly Marques",
     description: "A jornada real de uma mãe ao descobrir o autismo da sua filha.",
-    images: ["https://www.projetogk.com/images/capa-livro.png"],
+    images: ["https://www.projetogk.com/images/og-image.jpg"],
   },
 }
 
