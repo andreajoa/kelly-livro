@@ -11,6 +11,7 @@ function SuccessContent() {
   const { clearCart } = useCart()
   const { locale } = useLang()
   const orderId = searchParams.get("order_id")
+  const sessionId = searchParams.get("session_id")
   const productType = searchParams.get("product_type") ?? "physical"
   const isDigital = productType === "digital"
 
@@ -118,7 +119,7 @@ function SuccessContent() {
       <div className="flex flex-col gap-3 items-center">
         {isDigital && "cta" in c && (
           <a
-            href={`/${locale}/minha-biblioteca?order_id=${orderId}&product_type=digital`}
+            href={`/${locale}/minha-biblioteca?session_id=${sessionId}&order_id=${orderId}&product_type=digital`}
             className="w-full font-bold py-3 px-8 rounded-full inline-block text-center transition-all hover:scale-105 active:scale-95"
             style={{
               background: "linear-gradient(135deg, #ec4899, #be185d)",
