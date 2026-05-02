@@ -7,7 +7,7 @@ import { createOrder, trackEvent } from "@/lib/api"
 import { useLang } from "@/lib/LangContext"
 
 export default function CheckoutPage() {
-  const { items, shippingCost, cep, address } = useCart()
+  const { items, shippingCost, cep, address, removeItem } = useCart()
   const { t, locale } = useLang()
   const isDigital = items.some(i => i.productType === "digital")
   const needsShipping = t.showShipping && !isDigital
@@ -117,11 +117,24 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2">
               <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl p-4 sm:p-6 lg:sticky lg:top-28">
                 <h2 className="text-lg font-bold mb-3 border-b pb-3">{t.checkoutPage.yourOrder}</h2>
-                {items.map(item => (<div key={item.id} className="flex justify-between py-2 text-xs sm:text-sm"><span className="truncate pr-2">{item.name}</span><span className="font-semibold flex-shrink-0">{currencySymbol} {item.price.toFixed(2)}</span></div>))}
+                {items.map(item => (
+                  <div key={item.id} className="flex items-center justify-between py-2 gap-2">
+                    <span className="text-xs sm:text-sm flex-1 min-w-0 break-words">{item.name}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">{currencySymbol} {item.price.toFixed(2)}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors text-xl leading-none font-bold w-6 h-6 flex items-center justify-center"
+                        aria-label="Remover item"
+                      >×</button>
+                    </div>
+                  </div>
+                ))}
                 <div className="border-t mt-3 pt-3 space-y-1 text-xs sm:text-sm">
-                  <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span>{currencySymbol} {subtotalDisplay.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span>{t.carrinho.subtotal}</span><span className="font-medium">{currencySymbol} {subtotalDisplay.toFixed(2)}</span></div>
                   {needsShipping && <div className="flex justify-between"><span>{t.carrinho.shipping}</span><span>{currencySymbol} {shipping.toFixed(2)}</span></div>}
-                  <div className="flex justify-between font-bold text-base mt-2"><span>{t.carrinho.total}</span><span>{currencySymbol} {total.toFixed(2)}</span></div>
+                  <div className="flex justify-between font-bold text-base mt-2 pt-2 border-t"><span>{t.carrinho.total}</span><span>{currencySymbol} {total.toFixed(2)}</span></div>
                 </div>
               </div>
             </div>
