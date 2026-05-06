@@ -187,7 +187,7 @@ function LibraryContent() {
           <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug whitespace-pre-line mb-1">{d.title}</h1>
           <p className="text-sm italic mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>{d.author}</p>
           <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
-            <a href={d.pdf} target="_blank" rel="noopener noreferrer"
+            <a href={d.pdf} download="ebook-kelly-marques.pdf" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 font-semibold text-sm py-2 px-5 rounded-full transition-all hover:scale-105"
               style={{ background: "rgba(236,72,153,0.15)", color: "#f472b6", border: "1px solid rgba(244,114,182,0.3)" }}>
               {d.downloadPdf}
