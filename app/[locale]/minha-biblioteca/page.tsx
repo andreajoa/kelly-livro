@@ -175,6 +175,23 @@ function LibraryContent() {
     if (audioRef.current) audioRef.current.volume = v
   }
 
+  const downloadPdf = async () => {
+    try {
+      const res = await fetch(d.pdf)
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "ebook-kelly-marques.pdf"
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch {
+      window.open(d.pdf, "_blank", "noopener,noreferrer")
+    }
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-32 pt-6 space-y-8">
       <div className="relative rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-center sm:items-end"
@@ -187,11 +204,11 @@ function LibraryContent() {
           <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug whitespace-pre-line mb-1">{d.title}</h1>
           <p className="text-sm italic mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>{d.author}</p>
           <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
-            <a href={d.pdf} download="ebook-kelly-marques.pdf" target="_blank" rel="noopener noreferrer"
+            <button onClick={downloadPdf}
               className="inline-flex items-center gap-2 font-semibold text-sm py-2 px-5 rounded-full transition-all hover:scale-105"
               style={{ background: "rgba(236,72,153,0.15)", color: "#f472b6", border: "1px solid rgba(244,114,182,0.3)" }}>
               {d.downloadPdf}
-            </a>
+            </button>
             {orderId && (
               <span className="text-xs px-3 py-2 rounded-full" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)" }}>
                 {d.orderLabel} #{orderId}
